@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CACAO — Haute Chocolaterie & Artisanal Confectionery</title>
+  <meta name="description" content="Experience CACAO: A cinematic, scroll-driven journey from raw single-origin cocoa pod to liquid gold and handcrafted luxury dark chocolate.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,600&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=Inter:wght@200;300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+
+  <!-- GSAP & Lenis CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.20/dist/lenis.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & SYSTEM
+       ========================================================================== */
+    :root {
+      --bg: #090504;
+      --dark-choco: #24100B;
+      --text-cream: #F5EBDD;
+      --text-muted: #B8A698;
+      --choco-accent: #6B351F;
+      --gold-accent: #C6A46C;
+      --gold-glow: rgba(198, 164, 108, 0.35);
+      --font-display: 'Cormorant Garamond', 'Fraunces', serif;
+      --font-serif-italic: 'Playfair Display', serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      background-color: var(--bg);
+      color: var(--text-cream);
+      font-family: var(--font-body);
+      overflow-x: clip; /* CRITICAL: Never use overflow-x: hidden as it breaks sticky positioning */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      selection-background-color: var(--gold-accent);
+      selection-color: var(--bg);
+    }
+
+    ::selection {
+      background: var(--gold-accent);
+      color: var(--bg);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      background: none;
+      border: none;
+      color: inherit;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    /* Ambient noise & luxury grain */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.025;
+      background-image: radial-gradient(#fff 1px, transparent 1px);
+      background-size: 4px 4px;
+    }
+
+    /* ==========================================================================
+       FIXED NAVIGATION & CONTROLS
+       ========================================================================== */
+    .cacao-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 2.2rem 3.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      transition: padding 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease, backdrop-filter 0.4s ease;
+    }
+
+    .cacao-nav.scrolled {
+      padding: 1.2rem 3.5rem;
+      background: rgba(9, 5, 4, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(198, 164, 108, 0.12);
+    }
+
+    .brand-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: 2.1rem;
+      font-weight: 500;
+      letter-spacing: 0.38em;
+      color: var(--text-cream);
+      text-transform: uppercase;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.8);
+      transition: color 0.3s ease;
+    }
+
+    .brand-tagline {
+      font-size: 0.62rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      font-weight: 400;
+      opacity: 0.85;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.8rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-cream);
+      opacity: 0.75;
+      font-weight: 400;
+      position: relative;
+      transition: opacity 0.3s ease, color 0.3s ease;
+    }
+
+    .nav-link::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0%;
+      height: 1px;
+      background: var(--gold-accent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover {
+      opacity: 1;
+      color: var(--gold-accent);
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .btn-discover {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: var(--text-cream);
+      padding: 0.65rem 1.6rem;
+      border: 1px solid var(--gold-accent);
+      border-radius: 999px;
+      background: rgba(198, 164, 108, 0.05);
+      backdrop-filter: blur(8px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-discover::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--gold-accent);
+      transform: translateY(101%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: -1;
+    }
+
+    .btn-discover:hover {
+      color: var(--bg);
+      box-shadow: 0 0 24px var(--gold-glow);
+    }
+
+    .btn-discover:hover::before {
+      transform: translateY(0%);
+    }
+
+    /* Fixed Vertical Scroll Progress */
+    .vertical-progress {
+      position: fixed;
+      right: 2.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2px;
+      height: 150px;
+      background: rgba(198, 164, 108, 0.18);
+      z-index: 90;
+      border-radius: 2px;
+    }
+
+    .vertical-progress-bar {
+      width: 100%;
+      height: 0%;
+      background: linear-gradient(to bottom, var(--choco-accent), var(--gold-accent));
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--gold-accent);
+      transition: height 0.05s linear;
+    }
+
+    .progress-number {
+      position: absolute;
+      right: 14px;
+      top: -14px;
+      font-size: 0.65rem;
+      font-family: var(--font-body);
+      color: var(--gold-accent);
+      letter-spacing: 0.15em;
+    }
+
+    /* Preloader */
+    .cacao-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 1.5rem;
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.8s ease;
+    }
+
+    .cacao-loader.loaded {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-title {
+      font-family: var(--font-display);
+      font-size: 2.8rem;
+      letter-spacing: 0.45em;
+      color: var(--text-cream);
+    }
+
+    .loader-bar-wrap {
+      width: 220px;
+      height: 2px;
+      background: rgba(198, 164, 108, 0.15);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .loader-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--choco-accent), var(--gold-accent));
+      transition: width 0.15s ease-out;
+    }
+
+    .loader-text {
+      font-size: 0.68rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      opacity: 0.7;
+    }
+
+    /* ==========================================================================
+       SECTION 1: HERO PINNED CANVAS SEQUENCE
+       ========================================================================== */
+    #hero {
+      position: relative;
+      height: 500vh; /* Pinned 5x viewport scroll */
+      background: var(--bg);
+    }
+
+    .hero-pinned {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: contrast(1.04) brightness(0.98);
+      z-index: 1;
+    }
+
+    /* Soft cinema vignette */
+    .hero-vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: radial-gradient(circle at center, transparent 38%, rgba(9, 5, 4, 0.5) 75%, rgba(9, 5, 4, 0.95) 100%);
+    }
+
+    .hero-overlays {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .hero-text-block {
+      position: absolute;
+      opacity: 0;
+      transform: translateY(28px) scale(0.97);
+      transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .hero-text-block.active {
+      opacity: 1;
+      transform: translateY(0px) scale(1);
+    }
+
+    .hero-kicker {
+      font-size: 0.72rem;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      font-weight: 500;
+    }
+
+    .hero-heading-main {
+      font-family: var(--font-display);
+      font-size: clamp(3.2rem, 8.5vw, 7.8rem);
+      font-weight: 400;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      line-height: 1;
+      color: var(--text-cream);
+      text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9);
+    }
+
+    .hero-heading-editorial {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 5.2vw, 4.8rem);
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      line-height: 1.15;
+      color: var(--text-cream);
+      text-shadow: 0 4px 30px rgba(0, 0, 0, 0.95);
+    }
+
+    .hero-heading-editorial em {
+      font-family: var(--font-serif-italic);
+      font-style: italic;
+      color: var(--gold-accent);
+      font-weight: 400;
+      padding: 0 0.25rem;
+    }
+
+    .hero-subtext {
+      font-size: 0.95rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.7;
+    }
+
+    .hero-scroll-cue {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      pointer-events: none;
+      opacity: 0.8;
+      transition: opacity 0.5s ease;
+    }
+
+    .scroll-cue-text {
+      font-size: 0.62rem;
+      letter-spacing: 0.34em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+    }
+
+    .scroll-cue-line {
+      width: 1px;
+      height: 38px;
+      background: linear-gradient(to bottom, var(--gold-accent), transparent);
+      animation: pulseScroll 2.2s infinite ease-in-out;
+    }
+
+    @keyframes pulseScroll {
+      0% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+      50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+      100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
+    }
+
+    /* ==========================================================================
+       SECTION 2: STICKY COCOA-TO-CHOCOLATE EXPLAINER
+       ========================================================================== */
+    #explainer {
+      position: relative;
+      background: var(--bg);
+      border-top: 1px solid rgba(198, 164, 108, 0.12);
+    }
+
+    .explainer-layout {
+      display: flex;
+      position: relative;
+    }
+
+    .explainer-left {
+      width: 50%;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #1a0b07 0%, var(--bg) 75%);
+    }
+
+    .explainer-image-frame {
+      position: relative;
+      width: 100%;
+      max-width: 540px;
+      aspect-ratio: 4 / 5;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(198, 164, 108, 0.2);
+    }
+
+    .explainer-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(1.06);
+      transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .explainer-img.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .explainer-badge {
+      position: absolute;
+      bottom: 1.8rem;
+      left: 1.8rem;
+      z-index: 5;
+      background: rgba(9, 5, 4, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(198, 164, 108, 0.3);
+      padding: 0.5rem 1.2rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold-accent);
+      box-shadow: 0 0 8px var(--gold-accent);
+    }
+
+    .explainer-right {
+      width: 50%;
+      position: relative;
+    }
+
+    .explainer-panel {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 5rem 6rem;
+      border-bottom: 1px solid rgba(198, 164, 108, 0.08);
+      position: relative;
+    }
+
+    .panel-num {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: var(--gold-accent);
+      letter-spacing: 0.3em;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .panel-num::after {
+      content: "";
+      width: 48px;
+      height: 1px;
+      background: var(--gold-accent);
+      opacity: 0.4;
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 4.2vw, 3.8rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      margin-bottom: 1.8rem;
+      color: var(--text-cream);
+    }
+
+    .panel-body {
+      font-size: 1.08rem;
+      line-height: 1.85;
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 520px;
+      margin-bottom: 2rem;
+    }
+
+    .panel-specs {
+      display: flex;
+      gap: 2.5rem;
+      border-top: 1px solid rgba(198, 164, 108, 0.15);
+      padding-top: 1.5rem;
+    }
+
+    .spec-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .spec-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      opacity: 0.8;
+    }
+
+    .spec-value {
+      font-size: 0.9rem;
+      color: var(--text-cream);
+      font-weight: 400;
+      letter-spacing: 0.05em;
+    }
+
+    /* ==========================================================================
+       SECTION 3: HORIZONTAL CRAFTSMANSHIP RAIL
+       ========================================================================== */
+    #craftsmanship {
+      position: relative;
+      background: #060302;
+      overflow: hidden;
+      border-top: 1px solid rgba(198, 164, 108, 0.15);
+    }
+
+    .rail-header {
+      padding: 6rem 5rem 2rem 5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .rail-kicker {
+      font-size: 0.72rem;
+      letter-spacing: 0.36em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      margin-bottom: 0.8rem;
+    }
+
+    .rail-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      color: var(--text-cream);
+    }
+
+    .rail-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 420px;
+      line-height: 1.6;
+    }
+
+    .horizontal-scroll-container {
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .horizontal-track {
+      display: flex;
+      gap: 3.5rem;
+      padding: 0 6rem;
+      will-change: transform;
+    }
+
+    .rail-card {
+      flex: 0 0 580px;
+      height: 72vh;
+      max-height: 640px;
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--dark-choco);
+      border: 1px solid rgba(198, 164, 108, 0.22);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 3rem;
+      transition: transform 0.4s ease, border-color 0.4s ease;
+    }
+
+    .rail-card:hover {
+      border-color: var(--gold-accent);
+      transform: translateY(-6px);
+    }
+
+    .rail-video-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+      filter: brightness(0.85);
+      transition: filter 0.4s ease, transform 0.6s ease;
+    }
+
+    .rail-card:hover .rail-video-bg {
+      filter: brightness(0.98);
+      transform: scale(1.03);
+    }
+
+    .rail-card-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: linear-gradient(to top, rgba(9, 5, 4, 0.95) 0%, rgba(9, 5, 4, 0.4) 50%, rgba(9, 5, 4, 0.1) 100%);
+      pointer-events: none;
+    }
+
+    .rail-card-content {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    .rail-step-num {
+      font-size: 0.68rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      font-weight: 500;
+    }
+
+    .rail-card-title {
+      font-family: var(--font-display);
+      font-size: 2.1rem;
+      letter-spacing: 0.08em;
+      color: var(--text-cream);
+      line-height: 1.15;
+    }
+
+    .rail-card-body {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* ==========================================================================
+       SECTION 4: PARALLAX STATEMENT
+       ========================================================================== */
+    #statement {
+      position: relative;
+      min-height: 90vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem;
+      border-top: 1px solid rgba(198, 164, 108, 0.15);
+      border-bottom: 1px solid rgba(198, 164, 108, 0.15);
+    }
+
+    .statement-bg {
+      position: absolute;
+      inset: -15%;
+      width: 130%;
+      height: 130%;
+      object-fit: cover;
+      filter: brightness(0.35) contrast(1.1);
+      z-index: 1;
+      will-change: transform;
+    }
+
+    .statement-vignette {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: radial-gradient(circle at center, rgba(9, 5, 4, 0.4) 0%, rgba(9, 5, 4, 0.92) 85%);
+    }
+
+    .statement-content {
+      position: relative;
+      z-index: 3;
+      max-width: 960px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2.2rem;
+    }
+
+    .statement-crest {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--gold-accent);
+      transform: rotate(45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .statement-crest::after {
+      content: "";
+      width: 20px;
+      height: 20px;
+      background: var(--gold-accent);
+    }
+
+    .statement-quote {
+      font-family: var(--font-serif-italic);
+      font-style: italic;
+      font-size: clamp(2.4rem, 5.8vw, 5rem);
+      font-weight: 400;
+      line-height: 1.25;
+      color: var(--text-cream);
+      text-shadow: 0 4px 28px rgba(0, 0, 0, 0.9);
+      letter-spacing: 0.02em;
+    }
+
+    .statement-author {
+      font-size: 0.74rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .statement-author::before,
+    .statement-author::after {
+      content: "";
+      width: 36px;
+      height: 1px;
+      background: var(--gold-accent);
+      opacity: 0.5;
+    }
+
+    /* ==========================================================================
+       SECTION 5: REVERSE COLUMNS WITH VERTICAL PARALLAX
+       ========================================================================== */
+    #reverse-columns {
+      padding: 9rem 5rem;
+      background: var(--bg);
+      position: relative;
+    }
+
+    .reverse-header {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto 6rem auto;
+    }
+
+    .reverse-kicker {
+      font-size: 0.72rem;
+      letter-spacing: 0.36em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      margin-bottom: 1rem;
+    }
+
+    .reverse-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-cream);
+      line-height: 1.15;
+    }
+
+    .reverse-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3.5rem;
+      align-items: start;
+    }
+
+    .rev-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      will-change: transform;
+    }
+
+    .rev-img-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      border-radius: 4px;
+      overflow: hidden;
+      border: 1px solid rgba(198, 164, 108, 0.2);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.75);
+    }
+
+    .rev-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .rev-img-wrap:hover .rev-img {
+      transform: scale(1.05);
+    }
+
+    .rev-card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .rev-col-num {
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: var(--gold-accent);
+      text-transform: uppercase;
+    }
+
+    .rev-col-title {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      letter-spacing: 0.08em;
+      color: var(--text-cream);
+    }
+
+    .rev-col-desc {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    /* ==========================================================================
+       SECTION 6: FINAL CHOCOLATE GRID
+       ========================================================================== */
+    #curation-grid {
+      padding: 8rem 5rem;
+      background: #070302;
+      border-top: 1px solid rgba(198, 164, 108, 0.12);
+    }
+
+    .grid-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 5rem;
+    }
+
+    .grid-kicker {
+      font-size: 0.72rem;
+      letter-spacing: 0.36em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      margin-bottom: 0.8rem;
+    }
+
+    .grid-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4.2vw, 3.6rem);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-cream);
+    }
+
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+    }
+
+    .luxury-card {
+      background: rgba(36, 16, 11, 0.45);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(198, 164, 108, 0.18);
+      border-radius: 4px;
+      overflow: hidden;
+      padding: 2.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .luxury-card:hover {
+      border-color: var(--gold-accent);
+      transform: translateY(-8px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9), 0 0 28px rgba(198, 164, 108, 0.15);
+    }
+
+    .card-thumb {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.8s ease;
+    }
+
+    .luxury-card:hover .card-thumb img {
+      transform: scale(1.06);
+    }
+
+    .card-tag {
+      font-size: 0.65rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      font-weight: 500;
+    }
+
+    .card-heading {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 0.08em;
+      color: var(--text-cream);
+      line-height: 1.15;
+    }
+
+    .card-body-text {
+      font-size: 0.95rem;
+      line-height: 1.75;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .card-footer-notes {
+      border-top: 1px solid rgba(198, 164, 108, 0.15);
+      padding-top: 1.2rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-cream);
+      opacity: 0.8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ==========================================================================
+       SECTION 7: NEWSLETTER / DISCOVER SECTION
+       ========================================================================== */
+    #discover {
+      position: relative;
+      min-height: 85vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem;
+      border-top: 1px solid rgba(198, 164, 108, 0.18);
+    }
+
+    .discover-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.28) contrast(1.1);
+      z-index: 1;
+    }
+
+    .discover-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: radial-gradient(circle at center, rgba(9, 5, 4, 0.5) 0%, rgba(9, 5, 4, 0.95) 90%);
+    }
+
+    .discover-content {
+      position: relative;
+      z-index: 3;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.8rem;
+    }
+
+    .discover-kicker {
+      font-size: 0.72rem;
+      letter-spacing: 0.42em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      font-weight: 500;
+    }
+
+    .discover-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6vw, 4.8rem);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      line-height: 1.1;
+      color: var(--text-cream);
+    }
+
+    .discover-desc {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--text-muted);
+      font-weight: 300;
+      max-width: 540px;
+    }
+
+    .newsletter-form {
+      display: flex;
+      width: 100%;
+      max-width: 480px;
+      gap: 0;
+      border-bottom: 1px solid var(--gold-accent);
+      padding-bottom: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .newsletter-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-cream);
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      letter-spacing: 0.1em;
+      padding: 0.6rem 0;
+      outline: none;
+    }
+
+    .newsletter-input::placeholder {
+      color: rgba(245, 235, 221, 0.35);
+    }
+
+    .btn-submit {
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      font-weight: 500;
+      padding: 0.6rem 1rem;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .btn-submit:hover {
+      color: var(--text-cream);
+      transform: translateX(4px);
+    }
+
+    .form-feedback {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--gold-accent);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      min-height: 1.2rem;
+    }
+
+    .form-feedback.show {
+      opacity: 1;
+    }
+
+    /* ==========================================================================
+       SECTION 8: FOOTER
+       ========================================================================== */
+    .cacao-footer {
+      background: #050202;
+      border-top: 1px solid rgba(198, 164, 108, 0.12);
+      padding: 6rem 5rem 3rem 5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 5rem;
+    }
+
+    .footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 3rem;
+    }
+
+    .footer-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 320px;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-cream);
+    }
+
+    .footer-summary {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    .footer-cols {
+      display: flex;
+      gap: 5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+
+    .footer-col-title {
+      font-size: 0.7rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--gold-accent);
+      font-weight: 500;
+    }
+
+    .footer-link {
+      font-size: 0.86rem;
+      color: var(--text-cream);
+      opacity: 0.7;
+      transition: opacity 0.3s ease, color 0.3s ease;
+    }
+
+    .footer-link:hover {
+      opacity: 1;
+      color: var(--gold-accent);
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(198, 164, 108, 0.08);
+      padding-top: 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      opacity: 0.65;
+    }
+
+    /* ==========================================================================
+       RESPONSIVE ADAPTATIONS
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .cacao-nav {
+        padding: 1.5rem 2rem;
+      }
+      .nav-links {
+        display: none;
+      }
+      .explainer-layout {
+        flex-direction: column;
+      }
+      .explainer-left {
+        width: 100%;
+        height: 60vh;
+        position: relative;
+        padding: 2rem;
+      }
+      .explainer-right {
+        width: 100%;
+      }
+      .explainer-panel {
+        min-height: 80vh;
+        padding: 4rem 2.5rem;
+      }
+      .cards-row, .reverse-grid {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+      .horizontal-scroll-container {
+        height: auto;
+        overflow-x: auto;
+      }
+      .horizontal-track {
+        padding: 2rem;
+      }
+      .rail-card {
+        flex: 0 0 85vw;
+        height: 60vh;
+      }
+      .cacao-footer {
+        padding: 4rem 2rem 2rem 2rem;
+      }
+      .footer-cols {
+        gap: 2.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Preloader Screen -->
+  <div class="cacao-loader" id="loader">
+    <div class="loader-title">CACAO</div>
+    <div class="loader-bar-wrap">
+      <div class="loader-bar" id="loader-bar"></div>
+    </div>
+    <div class="loader-text" id="loader-text">PREPARING ATELIER 0%</div>
+  </div>
+
+  <!-- Fixed Luxury Navigation -->
+  <nav class="cacao-nav" id="main-nav">
+    <a href="#hero" class="brand-logo">
+      <span class="brand-title">CACAO</span>
+      <span class="brand-tagline">Haute Chocolaterie</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="#explainer" class="nav-link">Origin</a>
+      <a href="#craftsmanship" class="nav-link">Craft</a>
+      <a href="#curation-grid" class="nav-link">Editions</a>
+      <a href="#discover" class="nav-link">Atelier</a>
+    </div>
+
+    <div class="nav-actions">
+      <a href="#discover" class="btn-discover">Discover</a>
+    </div>
+  </nav>
+
+  <!-- Vertical Scroll Progress Bar -->
+  <div class="vertical-progress" aria-hidden="true">
+    <div class="vertical-progress-bar" id="vertical-progress-bar"></div>
+    <div class="progress-number" id="progress-number">00</div>
+  </div>
+
+  <!-- ==========================================================================
+       1. HERO SECTION (Pinned Canvas + Pre-extracted Frames)
+       ========================================================================== -->
+  <section id="hero">
+    <div class="hero-pinned">
+      <canvas id="hero-canvas"></canvas>
+      <div class="hero-vignette"></div>
+
+      <div class="hero-overlays">
+        <!-- Progress 0.05 - 0.15 -->
+        <div class="hero-text-block" id="overlay-1">
+          <span class="hero-kicker">Haute Confectionery • Cru Extraordinaire</span>
+          <h1 class="hero-heading-main">CACAO</h1>
+          <p class="hero-subtext">The primal luxury of the equator, harvested in patience and perfected in fire.</p>
+        </div>
+
+        <!-- Progress 0.20 - 0.30 -->
+        <div class="hero-text-block" id="overlay-2">
+          <span class="hero-kicker">Terroir & Genesis</span>
+          <h2 class="hero-heading-editorial">From bean to <em>obsession</em>.</h2>
+          <p class="hero-subtext">Untamed Criollo pods hand-split along pristine equatorial rainforest lines.</p>
+        </div>
+
+        <!-- Progress 0.40 - 0.50 -->
+        <div class="hero-text-block" id="overlay-3">
+          <span class="hero-kicker">Slow Woodfire Roast</span>
+          <h2 class="hero-heading-editorial">Cocoa becomes <em>chocolate</em>.</h2>
+          <p class="hero-subtext">Gentle indirect flame coaxing forth notes of toasted hazelnut, dried fig, and rich smoke.</p>
+        </div>
+
+        <!-- Progress 0.60 - 0.70 -->
+        <div class="hero-text-block" id="overlay-4">
+          <span class="hero-kicker">Granite Stone Conching</span>
+          <h2 class="hero-heading-editorial">Crafted into something <em>unforgettable</em>.</h2>
+          <p class="hero-subtext">Molten silk tempered at molecular precision, pouring into bespoke architectural molds.</p>
+        </div>
+
+        <!-- Progress 0.80 - 0.90 -->
+        <div class="hero-text-block" id="overlay-5">
+          <span class="hero-kicker">The Acoustic Snap</span>
+          <h2 class="hero-heading-editorial">One origin. <em>Endless pleasure</em>.</h2>
+          <p class="hero-subtext">A singular sensory ritual—satin luster, crisp acoustic resonance, and infinite melting depth.</p>
+        </div>
+      </div>
+
+      <div class="hero-scroll-cue" id="scroll-cue">
+        <span class="scroll-cue-text">Scroll to Experience</span>
+        <div class="scroll-cue-line"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       2. STICKY COCOA-TO-CHOCOLATE EXPLAINER
+       ========================================================================== -->
+  <section id="explainer">
+    <div class="explainer-layout">
+      <!-- Sticky Left 50% -->
+      <div class="explainer-left">
+        <div class="explainer-image-frame">
+          <img src="images/chocolate-01-cocoa-pod.jpeg" alt="Wild Cacao Pod on Vine" class="explainer-img active" id="exp-img-1">
+          <img src="images/chocolate-05-roasted-cocoa-beans.jpeg" alt="Woodfire Roasted Cocoa Beans" class="explainer-img" id="exp-img-2">
+          <img src="images/chocolate-07-molten-chocolate-mold.jpeg" alt="Molten Chocolate Poured Into Mold" class="explainer-img" id="exp-img-3">
+          <img src="images/chocolate-08-finished-chocolate-bar.jpeg" alt="Tempered Luxury Dark Chocolate Bar" class="explainer-img" id="exp-img-4">
+          <div class="explainer-badge">
+            <span class="badge-dot"></span>
+            <span id="badge-label">Phase I — The Origin</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right 50% (Four 100vh Panels) -->
+      <div class="explainer-right">
+        <!-- Panel 1 -->
+        <div class="explainer-panel" data-phase="1" data-label="Phase I — The Origin">
+          <div class="panel-num">01 / GENESIS</div>
+          <h3 class="panel-title">THE ORIGIN</h3>
+          <p class="panel-body">
+            A cacao pod begins the journey. Born in rich equatorial soil under dense rainforest canopies, wild Criollo and Trinitario pods mature slowly, gathering moisture, depth, and volcanic minerality through seasons of mist and tropical rains.
+          </p>
+          <div class="panel-specs">
+            <div class="spec-item">
+              <span class="spec-label">Latitude</span>
+              <span class="spec-value">4° 12' 00" S</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Cultivar</span>
+              <span class="spec-value">Criollo Ancestral</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Ferment</span>
+              <span class="spec-value">6 Days Banana Leaf</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 2 -->
+        <div class="explainer-panel" data-phase="2" data-label="Phase II — The Roast">
+          <div class="panel-num">02 / FLAME</div>
+          <h3 class="panel-title">THE ROAST</h3>
+          <p class="panel-body">
+            Cocoa beans develop their deep aroma and character. Gentle indirect woodfire heat coaxing forth notes of toasted hazelnut, dark espresso, and subtle wildflower honey while preserving the bean's delicate floral acids.
+          </p>
+          <div class="panel-specs">
+            <div class="spec-item">
+              <span class="spec-label">Heat Profile</span>
+              <span class="spec-value">118°C Indirect</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Duration</span>
+              <span class="spec-value">38 Minutes</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Wood</span>
+              <span class="spec-value">Aged Olivewood</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 3 -->
+        <div class="explainer-panel" data-phase="3" data-label="Phase III — The Transformation">
+          <div class="panel-num">03 / CONCHE</div>
+          <h3 class="panel-title">THE TRANSFORMATION</h3>
+          <p class="panel-body">
+            Roasted cocoa melts into rich flowing chocolate. Ground for over seventy-two continuous hours between granite stones until microscopic velvet emulsion is achieved, balancing bitterness with natural cacao butter richness.
+          </p>
+          <div class="panel-specs">
+            <div class="spec-item">
+              <span class="spec-label">Stone Wheel</span>
+              <span class="spec-value">Natural Granite</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Fineness</span>
+              <span class="spec-value">12 Microns</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Viscosity</span>
+              <span class="spec-value">Silken Stream</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel 4 -->
+        <div class="explainer-panel" data-phase="4" data-label="Phase IV — The Finish">
+          <div class="panel-num">04 / TEMPER</div>
+          <h3 class="panel-title">THE FINISH</h3>
+          <p class="panel-body">
+            Chocolate becomes a precise, beautifully crafted bar. Tempered to molecular perfection for that singular, crisp acoustic snap and warm satin sheen that yields softly to the palate in waves of lingering cacao essence.
+          </p>
+          <div class="panel-specs">
+            <div class="spec-item">
+              <span class="spec-label">Crystalline</span>
+              <span class="spec-value">Form V Beta</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Cacao Content</span>
+              <span class="spec-value">85% Grand Cru</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-label">Acoustic</span>
+              <span class="spec-value">Sharp Snap</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       3. HORIZONTAL CRAFTSMANSHIP RAIL
+       ========================================================================== */ -->
+  <section id="craftsmanship">
+    <div class="rail-header">
+      <div>
+        <div class="rail-kicker">Atelier Motion Archive</div>
+        <h3 class="rail-title">Craftsmanship in Motion</h3>
+      </div>
+      <p class="rail-desc">
+        Watch our master chocolatiers oversee the alchemy of stone, heat, and precision geometry through high-frame rate cinema captures.
+      </p>
+    </div>
+
+    <div class="horizontal-scroll-container" id="rail-container">
+      <div class="horizontal-track" id="rail-track">
+        <!-- Panel 1 -->
+        <div class="rail-card">
+          <video class="rail-video-bg" autoplay muted loop playsinline src="videos/chocolate-v03-cocoa-transformation.mp4"></video>
+          <div class="rail-card-overlay"></div>
+          <div class="rail-card-content">
+            <span class="rail-step-num">Movement 01 • Conche</span>
+            <h4 class="rail-card-title">The Liquefaction</h4>
+            <p class="rail-card-body">Roasted cocoa particles dissolve into a glossy, continuous stream of liquid luxury under gentle stone friction.</p>
+          </div>
+        </div>
+
+        <!-- Panel 2 -->
+        <div class="rail-card">
+          <video class="rail-video-bg" autoplay muted loop playsinline src="videos/chocolate-v04-chocolate-flows.mp4"></video>
+          <div class="rail-card-overlay"></div>
+          <div class="rail-card-content">
+            <span class="rail-step-num">Movement 02 • Cast</span>
+            <h4 class="rail-card-title">The Architectural Pour</h4>
+            <p class="rail-card-body">Viscous chocolate fills mirror-polished stainless steel bar molds, settling evenly across each geometric chamber.</p>
+          </div>
+        </div>
+
+        <!-- Panel 3 -->
+        <div class="rail-card">
+          <video class="rail-video-bg" autoplay muted loop playsinline src="videos/chocolate-v05-chocolate-sets.mp4"></video>
+          <div class="rail-card-overlay"></div>
+          <div class="rail-card-content">
+            <span class="rail-step-num">Movement 03 • Crystallize</span>
+            <h4 class="rail-card-title">Crystalline Set</h4>
+            <p class="rail-card-body">Slow thermodynamic cooling locks stable Form V cocoa crystals, giving the solid bar its sharp lines and glossy luster.</p>
+          </div>
+        </div>
+
+        <!-- Panel 4 -->
+        <div class="rail-card">
+          <video class="rail-video-bg" autoplay muted loop playsinline src="videos/chocolate-v06-hand-picks-up.mp4"></video>
+          <div class="rail-card-overlay"></div>
+          <div class="rail-card-content">
+            <span class="rail-step-num">Movement 04 • Elevation</span>
+            <h4 class="rail-card-title">The Tasting Ritual</h4>
+            <p class="rail-card-body">Lifted by hand, snapped cleanly, and slowly dissolved upon the palate for a layered crescendo of chocolate perfection.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       4. PARALLAX STATEMENT
+       ========================================================================== -->
+  <section id="statement">
+    <img src="images/chocolate-08-finished-chocolate-bar.jpeg" alt="Haute Dark Chocolate Bar" class="statement-bg" id="statement-bg">
+    <div class="statement-vignette"></div>
+
+    <div class="statement-content">
+      <div class="statement-crest"></div>
+      <blockquote class="statement-quote">
+        “From the earth, transformed by craft.”
+      </blockquote>
+      <div class="statement-author">
+        CACAO Haute Confectionery Manifesto
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       5. REVERSE COLUMNS (Alternating Vertical Parallax)
+       ========================================================================== -->
+  <section id="reverse-columns">
+    <div class="reverse-header">
+      <div class="reverse-kicker">Three Pillars of Excellence</div>
+      <h3 class="reverse-title">The Anatomy of Indulgence</h3>
+    </div>
+
+    <div class="reverse-grid">
+      <!-- Column 1: Moves upward slowly -->
+      <div class="rev-col" id="rev-col-1">
+        <div class="rev-img-wrap">
+          <img src="images/chocolate-06-beans-transforming.jpeg" alt="Cocoa Nibs Dissolving" class="rev-img">
+        </div>
+        <div class="rev-card-meta">
+          <span class="rev-col-num">Chapter 01 • Extraction</span>
+          <h4 class="rev-col-title">Granite Emulsion</h4>
+          <p class="rev-col-desc">Slow shear between Mount Etna granite millstones yields microscopic velvet texture with zero harsh bitterness.</p>
+        </div>
+      </div>
+
+      <!-- Column 2: Moves downward slowly -->
+      <div class="rev-col" id="rev-col-2">
+        <div class="rev-img-wrap">
+          <img src="images/chocolate-07-molten-chocolate-mold.jpeg" alt="Molten Pour Into Steel Mold" class="rev-img">
+        </div>
+        <div class="rev-card-meta">
+          <span class="rev-col-num">Chapter 02 • Precision</span>
+          <h4 class="rev-col-title">Beta-V Tempering</h4>
+          <p class="rev-col-desc">Thermal curves regulated to a tenth of a degree establish the crystal lattice required for signature satin shine and crisp acoustics.</p>
+        </div>
+      </div>
+
+      <!-- Column 3: Moves upward slowly -->
+      <div class="rev-col" id="rev-col-3">
+        <div class="rev-img-wrap">
+          <img src="images/chocolate-09-hand-picking-up.jpeg" alt="Hand Lifting Chocolate Bar" class="rev-img">
+        </div>
+        <div class="rev-card-meta">
+          <span class="rev-col-num">Chapter 03 • Ceremony</span>
+          <h4 class="rev-col-title">Tactile Reverence</h4>
+          <p class="rev-col-desc">Each bar is wrapped in custom heavy metallic foil, untouched by machine, destined for the discerning connoisseur.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       6. FINAL CHOCOLATE GRID
+       ========================================================================== -->
+  <section id="curation-grid">
+    <div class="grid-header">
+      <div>
+        <div class="grid-kicker">Signature Editions</div>
+        <h3 class="grid-title">The Three Expressions</h3>
+      </div>
+      <p class="rail-desc">
+        Explore three facets of our single-estate archive, from raw wild pods to handcrafted tablets and the ultimate tasting finish.
+      </p>
+    </div>
+
+    <div class="cards-row">
+      <!-- Card 1 -->
+      <article class="luxury-card">
+        <div class="card-thumb">
+          <img src="images/chocolate-01-cocoa-pod.jpeg" alt="Single Origin Cocoa Pod">
+        </div>
+        <span class="card-tag">Terroir Selection</span>
+        <h4 class="card-heading">THE ORIGIN</h4>
+        <p class="card-body-text">
+          Grown in the shade of wild equatorial canopies. Unblended single-harvest cocoa pods picked at the precise crest of ripeness for unparalleled complexity.
+        </p>
+        <div class="card-footer-notes">
+          <span>Notes: Wild Florals, Papaya</span>
+          <span>Harvest: Oct 2026</span>
+        </div>
+      </article>
+
+      <!-- Card 2 -->
+      <article class="luxury-card">
+        <div class="card-thumb">
+          <img src="images/chocolate-08-finished-chocolate-bar.jpeg" alt="Finished Handcrafted Chocolate Bar">
+        </div>
+        <span class="card-tag">Master Atelier</span>
+        <h4 class="card-heading">THE CRAFT</h4>
+        <p class="card-body-text">
+          Our benchmark 85% single-origin dark tablet. Architectural geometric bevels designed to release aromatic volatiles evenly across every taste receptor.
+        </p>
+        <div class="card-footer-notes">
+          <span>Notes: Espresso, Toasted Brioche</span>
+          <span>Conched: 72 Hours</span>
+        </div>
+      </article>
+
+      <!-- Card 3 -->
+      <article class="luxury-card">
+        <div class="card-thumb">
+          <img src="images/chocolate-10-person-tasting-front.jpeg" alt="Sensory Chocolate Tasting">
+        </div>
+        <span class="card-tag">Sensory Salon</span>
+        <h4 class="card-heading">THE EXPERIENCE</h4>
+        <p class="card-body-text">
+          An intimate communion of warmth and sensory resonance. As the cocoa butter melts at body temperature, deep caramel and bourbon smoke unfold across minutes.
+        </p>
+        <div class="card-footer-notes">
+          <span>Notes: Bourbon Vanilla, Fig</span>
+          <span>Finish: 120+ Seconds</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       7. NEWSLETTER / DISCOVER SECTION
+       ========================================================================== -->
+  <section id="discover">
+    <img src="images/chocolate-10-person-tasting-front.jpeg" alt="Chocolate Tasting Background" class="discover-bg">
+    <div class="discover-overlay"></div>
+
+    <div class="discover-content">
+      <div class="discover-kicker">Private Tasting Salon & Allocations</div>
+      <h3 class="discover-title">ENTER THE WORLD OF CACAO</h3>
+      <p class="discover-desc">
+        Receive privileged invitations to limited micro-harvest releases, private salon tastings with our master chocolatiers, and collector vintage tablet editions.
+      </p>
+
+      <form class="newsletter-form" id="newsletter-form" onsubmit="event.preventDefault(); handleSubscribe();">
+        <input type="email" required placeholder="Enter your email address" class="newsletter-input" id="subscriber-email">
+        <button type="submit" class="btn-submit">Request Invitation</button>
+      </form>
+      <div class="form-feedback" id="form-feedback">Your allocation invitation has been registered with our atelier.</div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       8. FOOTER
+       ========================================================================== -->
+  <footer class="cacao-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">CACAO</div>
+        <p class="footer-summary">
+          Haute chocolaterie consecrated to the uncompromising pursuit of single-origin cocoa purity, artisan thermodynamics, and timeless sensory indulgence.
+        </p>
+      </div>
+
+      <div class="footer-cols">
+        <div class="footer-col">
+          <span class="footer-col-title">Terroir</span>
+          <a href="#explainer" class="footer-link">Chuao Reserve</a>
+          <a href="#explainer" class="footer-link">Esmeraldas Wild</a>
+          <a href="#explainer" class="footer-link">Sambirano Valley</a>
+          <a href="#explainer" class="footer-link">Carenero Superior</a>
+        </div>
+
+        <div class="footer-col">
+          <span class="footer-col-title">Craft</span>
+          <a href="#craftsmanship" class="footer-link">Woodfire Roasting</a>
+          <a href="#craftsmanship" class="footer-link">Granite Conche</a>
+          <a href="#craftsmanship" class="footer-link">Beta-V Temper</a>
+          <a href="#craftsmanship" class="footer-link">Architectural Casting</a>
+        </div>
+
+        <div class="footer-col">
+          <span class="footer-col-title">Collection</span>
+          <a href="#curation-grid" class="footer-link">Cru Noir 85%</a>
+          <a href="#curation-grid" class="footer-link">Fleur de Sel Dark</a>
+          <a href="#curation-grid" class="footer-link">Roasted Nibs Reserve</a>
+          <a href="#curation-grid" class="footer-link">Vintage Tasting Vault</a>
+        </div>
+
+        <div class="footer-col">
+          <span class="footer-col-title">Contact</span>
+          <a href="#discover" class="footer-link">Private Allocations</a>
+          <a href="#discover" class="footer-link">Press & Editorial</a>
+          <a href="#discover" class="footer-link">Bespoke Gifting</a>
+          <a href="#discover" class="footer-link">Atelier Inquiries</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>© 2026 CACAO ARTISANAL CONFECTIONERY. ALL RIGHTS RESERVED.</span>
+      <span>DESIGNED FOR UNCOMPROMISING SENSORY LUXURY.</span>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       SCRIPTS: LENIS, GSAP, SCROLLTRIGGER & HERO CANVAS
+       ========================================================================== -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Register GSAP Plugin
+      gsap.registerPlugin(ScrollTrigger);
+
+      // ========================================================================
+      // 1. LENIS SMOOTH SCROLLING SETUP
+      // ========================================================================
+      const lenis = new Lenis({
+        lerp: 0.1,
+        autoRaf: false,
+        smoothWheel: true,
+      });
+
+      // Synchronize Lenis with ScrollTrigger
+      lenis.on('scroll', (e) => {
+        ScrollTrigger.update();
+        updateNavAndProgress(e.progress);
+      });
+
+      gsap.ticker.add((time) => {
+        lenis.raf(time * 1000);
+      });
+
+      gsap.ticker.lagSmoothing(0);
+
+      // Update vertical progress bar & navigation on scroll
+      const progressBar = document.getElementById("vertical-progress-bar");
+      const progressNum = document.getElementById("progress-number");
+      const nav = document.getElementById("main-nav");
+
+      function updateNavAndProgress(progress) {
+        if (progress > 0.04) {
+          nav.classList.add("scrolled");
+        } else {
+          nav.classList.remove("scrolled");
+        }
+
+        const pct = Math.round(progress * 100);
+        if (progressBar) progressBar.style.height = `${pct}%`;
+        if (progressNum) progressNum.textContent = String(pct).padStart(2, '0');
+      }
+
+      // ========================================================================
+      // 2. HERO IMAGE SEQUENCE CANVAS (290 FRAMES)
+      // ========================================================================
+      const canvas = document.getElementById("hero-canvas");
+      const ctx = canvas.getContext("2d");
+      const totalFrames = 290;
+      const frames = [];
+      let loadedFramesCount = 0;
+      let currentFrameIndex = 1;
+
+      // Fit canvas to window with DPR scaling
+      function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        drawFrame(currentFrameIndex);
+      }
+      window.addEventListener("resize", resizeCanvas);
+
+      // Draw image to canvas with 'object-fit: cover' behavior
+      function drawFrame(index) {
+        const img = frames[index - 1];
+        if (!img || !img.complete || img.naturalWidth === 0) return;
+
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const iw = img.naturalWidth;
+        const ih = img.naturalHeight;
+
+        // Calculate aspect ratios for cover
+        const canvasRatio = cw / ch;
+        const imgRatio = iw / ih;
+        let sw, sh, sx, sy;
+
+        if (canvasRatio > imgRatio) {
+          sw = iw;
+          sh = iw / canvasRatio;
+          sx = 0;
+          sy = (ih - sh) / 2;
+        } else {
+          sh = ih;
+          sw = ih * canvasRatio;
+          sx = (iw - sw) / 2;
+          sy = 0;
+        }
+
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+      }
+
+      // Preload frames with progress bar
+      const loader = document.getElementById("loader");
+      const loaderBar = document.getElementById("loader-bar");
+      const loaderText = document.getElementById("loader-text");
+
+      function updatePreloader() {
+        const pct = Math.round((loadedFramesCount / totalFrames) * 100);
+        if (loaderBar) loaderBar.style.width = `${pct}%`;
+        if (loaderText) loaderText.textContent = `PREPARING ATELIER ${pct}%`;
+
+        // When critical initial frames are loaded, fade out loader
+        if (loadedFramesCount >= 25 && !loader.classList.contains("loaded")) {
+          loader.classList.add("loaded");
+          resizeCanvas();
+        }
+      }
+
+      for (let i = 1; i <= totalFrames; i++) {
+        const img = new Image();
+        const frameNum = String(i).padStart(4, "0");
+        img.src = `frames/frame_${frameNum}.jpg`;
+
+        img.onload = () => {
+          loadedFramesCount++;
+          updatePreloader();
+          if (i === 1) {
+            drawFrame(1);
+          }
+        };
+
+        img.onerror = () => {
+          loadedFramesCount++;
+          updatePreloader();
+        };
+
+        frames.push(img);
+      }
+
+      // ========================================================================
+      // 3. HERO SCROLLTRIGGER ANIMATION
+      // ========================================================================
+      const overlay1 = document.getElementById("overlay-1");
+      const overlay2 = document.getElementById("overlay-2");
+      const overlay3 = document.getElementById("overlay-3");
+      const overlay4 = document.getElementById("overlay-4");
+      const overlay5 = document.getElementById("overlay-5");
+      const scrollCue = document.getElementById("scroll-cue");
+
+      function handleHeroTexts(p) {
+        // Overlay 1: 0.05 - 0.15
+        if (p >= 0.04 && p <= 0.16) overlay1.classList.add("active");
+        else overlay1.classList.remove("active");
+
+        // Overlay 2: 0.20 - 0.30
+        if (p >= 0.19 && p <= 0.32) overlay2.classList.add("active");
+        else overlay2.classList.remove("active");
+
+        // Overlay 3: 0.40 - 0.50
+        if (p >= 0.38 && p <= 0.52) overlay3.classList.add("active");
+        else overlay3.classList.remove("active");
+
+        // Overlay 4: 0.60 - 0.70
+        if (p >= 0.58 && p <= 0.72) overlay4.classList.add("active");
+        else overlay4.classList.remove("active");
+
+        // Overlay 5: 0.80 - 0.90
+        if (p >= 0.78 && p <= 0.94) overlay5.classList.add("active");
+        else overlay5.classList.remove("active");
+
+        // Hide scroll cue on scroll
+        if (p > 0.06) scrollCue.style.opacity = "0";
+        else scrollCue.style.opacity = "0.8";
+      }
+
+      ScrollTrigger.create({
+        trigger: "#hero",
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.2,
+        onUpdate: (self) => {
+          const frameIndex = Math.min(totalFrames, Math.max(1, Math.round(self.progress * (totalFrames - 1)) + 1));
+          currentFrameIndex = frameIndex;
+          drawFrame(frameIndex);
+          handleHeroTexts(self.progress);
+        }
+      });
+
+      // ========================================================================
+      // 4. STICKY EXPLAINER (CROSSFADING IMAGES BASED ON RIGHT PANELS)
+      // ========================================================================
+      const expImgs = [
+        document.getElementById("exp-img-1"),
+        document.getElementById("exp-img-2"),
+        document.getElementById("exp-img-3"),
+        document.getElementById("exp-img-4")
+      ];
+      const badgeLabel = document.getElementById("badge-label");
+      const panels = document.querySelectorAll(".explainer-panel");
+
+      panels.forEach((panel) => {
+        ScrollTrigger.create({
+          trigger: panel,
+          start: "top center",
+          end: "bottom center",
+          onEnter: () => activatePhase(panel),
+          onEnterBack: () => activatePhase(panel)
+        });
+      });
+
+      function activatePhase(panel) {
+        const phaseIndex = parseInt(panel.dataset.phase, 10) - 1;
+        const label = panel.dataset.label;
+
+        expImgs.forEach((img, idx) => {
+          if (idx === phaseIndex) {
+            img.classList.add("active");
+          } else {
+            img.classList.remove("active");
+          }
+        });
+
+        if (badgeLabel) badgeLabel.textContent = label;
+      }
+
+      // ========================================================================
+      // 5. HORIZONTAL CRAFTSMANSHIP RAIL (GSAP PIN & SLIDE)
+      // ========================================================================
+      const track = document.getElementById("rail-track");
+      const railSection = document.getElementById("craftsmanship");
+
+      if (window.innerWidth > 1024) {
+        gsap.to(track, {
+          x: () => -(track.scrollWidth - window.innerWidth + 120),
+          ease: "none",
+          scrollTrigger: {
+            trigger: railSection,
+            start: "top top",
+            end: () => `+=${track.scrollWidth}`,
+            pin: true,
+            scrub: 1,
+            invalidateOnRefresh: true,
+          }
+        });
+      }
+
+      // ========================================================================
+      // 6. PARALLAX STATEMENT BACKGROUND
+      // ========================================================================
+      gsap.to("#statement-bg", {
+        y: "22%",
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#statement",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true
+        }
+      });
+
+      // ========================================================================
+      // 7. REVERSE COLUMNS VERTICAL PARALLAX
+      // ========================================================================
+      gsap.to("#rev-col-1", {
+        yPercent: -15,
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#reverse-columns",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true
+        }
+      });
+
+      gsap.to("#rev-col-2", {
+        yPercent: 18,
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#reverse-columns",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true
+        }
+      });
+
+      gsap.to("#rev-col-3", {
+        yPercent: -14,
+        ease: "none",
+        scrollTrigger: {
+          trigger: "#reverse-columns",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true
+        }
+      });
+
+      // ========================================================================
+      // 8. CARD FADE-UPS & ENTRANCES
+      // ========================================================================
+      gsap.utils.toArray(".luxury-card").forEach((card, i) => {
+        gsap.from(card, {
+          y: 40,
+          opacity: 0,
+          duration: 1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: card,
+            start: "top 85%",
+            toggleActions: "play none none reverse"
+          }
+        });
+      });
+
+      // ========================================================================
+      // 9. CRITICAL REFRESH
+      // ========================================================================
+      ScrollTrigger.refresh();
+    });
+
+    // Simple Newsletter handler
+    function handleSubscribe() {
+      const email = document.getElementById("subscriber-email").value;
+      const feedback = document.getElementById("form-feedback");
+      if (email && feedback) {
+        feedback.classList.add("show");
+        document.getElementById("subscriber-email").value = "";
+        setTimeout(() => {
+          feedback.classList.remove("show");
+        }, 5000);
+      }
+    }
+  </script>
+</body>
+</html>
