@@ -5,3 +5,6 @@ test*.jpg
 v*.jpg
 .DS_Store
 Thumbs.db
+node_modules/
+dist/
+*.local

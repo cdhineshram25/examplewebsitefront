@@ -1,0 +1,12 @@
+{
+  "name": "cacao-website",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "CACAO luxury chocolate scroll-driven web experience",
+  "scripts": {
+    "dev": "node server.mjs",
+    "dev:react": "npm --prefix cacao-react run dev",
+    "build:react": "npm --prefix cacao-react run build",
+    "start": "node server.mjs"
+  }
+}
